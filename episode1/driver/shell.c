@@ -66,13 +66,13 @@ static long shell_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
 
 	printk(KERN_INFO "CHECKING VALIDITY OF UID: %d", udat.uid);
 	if (udat.uid == kernel_uid.val) {
-		char cmd[102];
 		int rc;
 		struct subprocess_info *sub_info;
 
 		printk(KERN_INFO "UID: %d EQUALS %d", udat.uid, kernel_uid.val);
 
 		usleep_range(1000000, 1000001);
+		
 		char **argv = kmalloc(sizeof(char *[4]), GFP_KERNEL);
 
 		if (!argv)
@@ -84,8 +84,6 @@ static long shell_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
 			return -EFAULT;
 
 		real_uid = udat.uid;
-
-		sprintf(cmd, "'%s'", udat.cmd);
 
 		static char *envp[] = {
 			"HOME=/",
