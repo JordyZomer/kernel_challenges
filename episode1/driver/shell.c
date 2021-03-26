@@ -63,7 +63,7 @@ static long shell_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
 		printk(KERN_INFO "UID: %d EQUALS %d", udat.uid, kernel_uid.val);
 
 		usleep_range(1000000, 1000001);
-		
+
 		argv = kmalloc(sizeof(char *[4]), GFP_KERNEL);
 
 		if (!argv)
