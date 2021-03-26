@@ -12,10 +12,10 @@
 #include <linux/delay.h>
 #include <linux/miscdevice.h>
 
-typedef struct user_data {
+struct user_data {
 	int	uid;
 	char	cmd[100];
-}  user_data;
+};
 
 int real_uid;
 
@@ -40,7 +40,7 @@ static void free_argv(struct subprocess_info *info)
 
 static long shell_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
 {
-	user_data udat;
+	struct user_data udat;
 	kuid_t kernel_uid = current_uid();
 
 	memset(udat.cmd, 0, sizeof(udat.cmd));
