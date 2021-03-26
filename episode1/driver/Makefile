@@ -1,6 +1,12 @@
-obj-m=shell.o
+# SPDX-License-Identifier: GPL-2.0
+obj-m += shell.o
 
-all:
-	make -C /lib/modules/$(shell uname -r)/build M=$(shell pwd) modules
+KERNELVER	?= $(shell uname -r)
+KERNELDIR	?= /lib/modules/$(KERNELVER)/build
+PWD		:= $(shell pwd)
+
+modules:
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules
+
 clean:
-	make -C /lib/modules/$(shell uname -r)/build M=$(shell pwd) clean
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) clean
