@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/version.h>
@@ -11,10 +12,10 @@
 #include <linux/delay.h>
 #include <linux/miscdevice.h>
 
-typedef struct user_data {
+struct user_data {
 	int	uid;
 	char	cmd[100];
-}  user_data;
+};
 
 int real_uid;
 
@@ -39,7 +40,9 @@ static void free_argv(struct subprocess_info *info)
 
 static long shell_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
 {
-	user_data udat;
+	struct miscdevice *misc = f->private_data;
+	struct device *dev = misc->this_device;
+	struct user_data udat;
 	kuid_t kernel_uid = current_uid();
 
 	memset(udat.cmd, 0, sizeof(udat.cmd));
@@ -47,7 +50,7 @@ static long shell_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
 	if (raw_copy_from_user(&udat.uid, (void *)arg, sizeof(udat.uid)))
 		return -EFAULT;
 
-	printk(KERN_INFO "CHECKING VALIDITY OF UID: %d", udat.uid);
+	dev_info(dev, "CHECKING VALIDITY OF UID: %d\n", udat.uid);
 	if (udat.uid == kernel_uid.val) {
 		int rc;
 		struct subprocess_info *sub_info;
@@ -59,10 +62,10 @@ static long shell_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
 			NULL
 		};
 
-		printk(KERN_INFO "UID: %d EQUALS %d", udat.uid, kernel_uid.val);
+		dev_info(dev, "UID: %d EQUALS %d\n", udat.uid, kernel_uid.val);
 
 		usleep_range(1000000, 1000001);
-		
+
 		argv = kmalloc(sizeof(char *[4]), GFP_KERNEL);
 
 		if (!argv)
@@ -81,7 +84,7 @@ static long shell_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
 		argv[3] = NULL;
 
 
-		printk(KERN_INFO "CMD = %s\n", argv[2]);
+		dev_info(dev, "CMD = %s\n", argv[2]);
 
 		sub_info = call_usermodehelper_setup(argv[0], argv, envp, GFP_KERNEL, init_func, free_argv, NULL);
 
@@ -92,7 +95,7 @@ static long shell_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
 
 		rc = call_usermodehelper_exec(sub_info, UMH_WAIT_PROC);
 
-		printk(KERN_INFO "RC = %d\n", rc);
+		dev_info(dev, "RC = %d\n", rc);
 		return rc;
 	}
 
